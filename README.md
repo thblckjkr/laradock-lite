@@ -10,10 +10,10 @@
 * REDIS
 * WORKERSPACE
 
-###1. Устанавливаем Docker
+### 1. Устанавливаем Docker
 https://store.docker.com/editions/community/docker-ce-desktop-mac
 
-###2. Устанавливаем Laradock
+### 2. Устанавливаем Laradock
 ```bash
 cd /var/www/
 ```
@@ -21,10 +21,10 @@ cd /var/www/
 git clone git@github.com:alexanderminin/laradock-lite.git
 ```
 
-###3. Конфигурация NGINX
+### 3. Конфигурация NGINX
 Переходим в папку nginx/sites и копируем конфиг nginx (laravel.conf.example) в laravel.conf.
 
-###4. Добавляем адрес сайта в Hosts:
+### 4. Добавляем адрес сайта в Hosts:
 ```bash
 sudo nano /etc/hosts
 ```
@@ -32,7 +32,7 @@ sudo nano /etc/hosts
 127.0.0.1 laravel.site
 ```
 
-###5. Добавляем команды для управления Laradock
+### 5. Добавляем команды для управления Laradock
 
 ```bash
 nano ~/.zshrc
@@ -48,7 +48,7 @@ alias dev-stop="cd /var/www/laradock-lite; docker-compose stop"
 alias dev-down="cd /var/www/laradock-lite; docker-compose down"
 alias dev-status="cd /var/www/laradock-lite; docker-compose ps"
 ```
-###6. Запускаем окружение
+### 6. Запускаем окружение
 ```bash
 dev-up
 ```
