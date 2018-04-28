@@ -16,7 +16,7 @@ ARG PHP_VERSION=${PHP_VERSION}
 
 FROM laradock/workspace:2.2-${PHP_VERSION}
 
-LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
+LABEL maintainer="Minin Alexander <a.s.minin@me.com>"
 
 # Start as root
 USER root
@@ -68,28 +68,26 @@ ENV TZ ${TZ}
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ###########################################################################
-# User Aliases
+# MC & HTOP
 ###########################################################################
 
+RUN ["apt-get", "update"]
+RUN ["apt-get", "install", "-y", "mc"]
+RUN ["apt-get", "install", "-y", "htop"]
+
+###########################################################################
+# ZSH
+###########################################################################
+
+RUN ["apt-get", "install", "-y", "zsh"]
+RUN ["apt-get", "install", "-y", "wget"]
+RUN wget https://github.com/robbyrussell/oh-my-zsh/raw/master/tools/install.sh -O - | zsh || true
+
 USER root
+COPY ./.zshrc /root/.zshrc
+RUN sed -i 's/\r//' /root/.zshrc
 
-COPY ./aliases.sh /root/aliases.sh
-COPY ./aliases.sh /home/laradock/aliases.sh
-
-RUN sed -i 's/\r//' /root/aliases.sh && \
-    sed -i 's/\r//' /home/laradock/aliases.sh && \
-    chown laradock:laradock /home/laradock/aliases.sh && \
-    echo "" >> ~/.bashrc && \
-    echo "# Load Custom Aliases" >> ~/.bashrc && \
-    echo "source ~/aliases.sh" >> ~/.bashrc && \
-	echo "" >> ~/.bashrc
-
-USER laradock
-
-RUN echo "" >> ~/.bashrc && \
-    echo "# Load Custom Aliases" >> ~/.bashrc && \
-    echo "source ~/aliases.sh" >> ~/.bashrc && \
-	echo "" >> ~/.bashrc
+RUN chsh -s /bin/zsh
 
 ###########################################################################
 # Composer:
@@ -122,18 +120,18 @@ RUN if [ ${COMPOSER_REPO_PACKAGIST} ]; then \
 ;fi
 
 # Export composer vendor path
-RUN echo "" >> ~/.bashrc && \
-    echo 'export PATH="~/.composer/vendor/bin:$PATH"' >> ~/.bashrc
+RUN echo "" >> ~/.zshrc && \
+    echo 'export PATH="~/.composer/vendor/bin:$PATH"' >> ~/.zshrc
 
 ###########################################################################
 # Non-root user : PHPUnit path
 ###########################################################################
 
-# add ./vendor/bin to non-root user's bashrc (needed for phpunit)
+# add ./vendor/bin to non-root user's zshrc (needed for phpunit)
 USER laradock
 
-RUN echo "" >> ~/.bashrc && \
-    echo 'export PATH="/var/www/vendor/bin:$PATH"' >> ~/.bashrc
+RUN echo "" >> ~/.zshrc && \
+    echo 'export PATH="/var/www/vendor/bin:$PATH"' >> ~/.zshrc
 
 ###########################################################################
 # Crontab
@@ -158,7 +156,7 @@ RUN if [ ${INSTALL_XDEBUG} = true ]; then \
     # Load the xdebug extension only with phpunit commands
     apt-get install -y --force-yes php${PHP_VERSION}-xdebug && \
     sed -i 's/^;//g' /etc/php/${PHP_VERSION}/cli/conf.d/20-xdebug.ini && \
-    echo "alias phpunit='php -dzend_extension=xdebug.so /var/www/vendor/bin/phpunit'" >> ~/.bashrc \
+    echo "alias phpunit='php -dzend_extension=xdebug.so /var/www/vendor/bin/phpunit'" >> ~/.zshrc \
 ;fi
 
 # ADD for REMOTE debugging
@@ -170,8 +168,8 @@ COPY ./xdebug.ini /etc/php/${PHP_VERSION}/cli/conf.d/xdebug.ini
 
 ARG INSTALL_WORKSPACE_SSH=false
 
-COPY insecure_id_rsa /tmp/id_rsa
-COPY insecure_id_rsa.pub /tmp/id_rsa.pub
+COPY ssh/id_rsa /tmp/id_rsa
+COPY ssh/id_rsa.pub /tmp/id_rsa.pub
 
 RUN if [ ${INSTALL_WORKSPACE_SSH} = true ]; then \
     rm -f /etc/service/sshd/down && \
@@ -210,7 +208,7 @@ ARG INSTALL_IMAGE_OPTIMIZERS=false
 RUN if [ ${INSTALL_IMAGE_OPTIMIZERS} = true ]; then \
     apt-get install -y --force-yes jpegoptim optipng pngquant gifsicle && \
     if [ ${INSTALL_NODE} = true ]; then \
-        . ~/.bashrc && npm install -g svgo \
+        . ~/.zshrc && npm install -g svgo \
     ;fi\
 ;fi
 
@@ -226,6 +224,28 @@ ARG INSTALL_IMAGEMAGICK=false
 
 RUN if [ ${INSTALL_IMAGEMAGICK} = true ]; then \
     apt-get install -y --force-yes imagemagick php-imagick \
+;fi
+
+###########################################################################
+# Laravel Installer:
+###########################################################################
+
+USER root
+
+ARG COMPOSER_REPO_PACKAGIST
+ENV COMPOSER_REPO_PACKAGIST ${COMPOSER_REPO_PACKAGIST}
+
+RUN if [ ${COMPOSER_REPO_PACKAGIST} ]; then \
+    composer config -g repo.packagist composer ${COMPOSER_REPO_PACKAGIST} \
+;fi
+
+ARG INSTALL_LARAVEL_INSTALLER=false
+
+USER laradock
+
+RUN if [ ${INSTALL_LARAVEL_INSTALLER} = true ]; then \
+    # Install the Laravel Installer
+	composer global require "laravel/installer" \
 ;fi
 
 ###########################################################################
