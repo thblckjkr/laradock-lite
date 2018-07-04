@@ -31,7 +31,9 @@ ENV PUID ${PUID}
 ARG PGID=1000
 ENV PGID ${PGID}
 
-RUN groupadd -g ${PGID} laradock && \
+RUN apt-get update -yqq && \
+    pecl channel-update pecl.php.net && \
+    groupadd -g ${PGID} laradock && \
     useradd -u ${PUID} -g laradock -m laradock -G docker_env && \
     usermod -p "*" laradock
 
@@ -134,16 +136,6 @@ RUN echo "" >> ~/.zshrc && \
     echo 'export PATH="/var/www/vendor/bin:$PATH"' >> ~/.zshrc
 
 ###########################################################################
-# Crontab
-###########################################################################
-
-USER root
-
-COPY ./crontab /etc/cron.d
-
-RUN chmod -R 644 /etc/cron.d
-
-###########################################################################
 # xDebug:
 ###########################################################################
 
@@ -154,13 +146,16 @@ ARG PHP_VERSION=${PHP_VERSION}
 
 RUN if [ ${INSTALL_XDEBUG} = true ]; then \
     # Load the xdebug extension only with phpunit commands
-    apt-get install -y --force-yes php${PHP_VERSION}-xdebug && \
-    sed -i 's/^;//g' /etc/php/${PHP_VERSION}/cli/conf.d/20-xdebug.ini && \
-    echo "alias phpunit='php -dzend_extension=xdebug.so /var/www/vendor/bin/phpunit'" >> ~/.zshrc \
+    apt-get install -y php${PHP_VERSION}-xdebug && \
+    sed -i 's/^;//g' /etc/php/${PHP_VERSION}/cli/conf.d/20-xdebug.ini \
 ;fi
 
 # ADD for REMOTE debugging
 COPY ./xdebug.ini /etc/php/${PHP_VERSION}/cli/conf.d/xdebug.ini
+
+RUN sed -i "s/xdebug.remote_autostart=0/xdebug.remote_autostart=1/" /etc/php/${PHP_VERSION}/cli/conf.d/xdebug.ini && \
+    sed -i "s/xdebug.remote_enable=0/xdebug.remote_enable=1/" /etc/php/${PHP_VERSION}/cli/conf.d/xdebug.ini && \
+    sed -i "s/xdebug.cli_color=0/xdebug.cli_color=1/" /etc/php/${PHP_VERSION}/cli/conf.d/xdebug.ini
 
 ###########################################################################
 # ssh:
@@ -195,35 +190,6 @@ RUN if [ ${INSTALL_PHPREDIS} = true ]; then \
     printf "\n" | pecl -q install -o -f redis && \
     echo "extension=redis.so" >> /etc/php/${PHP_VERSION}/mods-available/redis.ini && \
     phpenmod redis \
-;fi
-
-###########################################################################
-# Image optimizers:
-###########################################################################
-
-USER root
-
-ARG INSTALL_IMAGE_OPTIMIZERS=false
-
-RUN if [ ${INSTALL_IMAGE_OPTIMIZERS} = true ]; then \
-    apt-get install -y --force-yes jpegoptim optipng pngquant gifsicle && \
-    if [ ${INSTALL_NODE} = true ]; then \
-        . ~/.zshrc && npm install -g svgo \
-    ;fi\
-;fi
-
-USER laradock
-
-###########################################################################
-# ImageMagick:
-###########################################################################
-
-USER root
-
-ARG INSTALL_IMAGEMAGICK=false
-
-RUN if [ ${INSTALL_IMAGEMAGICK} = true ]; then \
-    apt-get install -y --force-yes imagemagick php-imagick \
 ;fi
 
 ###########################################################################
@@ -272,6 +238,18 @@ RUN if [ ${INSTALL_DUSK_DEPS} = true ]; then \
   && unzip chromedriver_linux64.zip \
   && mv chromedriver /usr/local/bin/ \
   && rm chromedriver_linux64.zip \
+;fi
+
+###########################################################################
+# Subversion:
+###########################################################################
+
+USER root
+
+ARG INSTALL_SUBVERSION=false
+
+RUN if [ ${INSTALL_SUBVERSION} = true ]; then \
+    apt-get install -y subversion \
 ;fi
 
 ###########################################################################

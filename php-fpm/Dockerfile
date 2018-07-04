@@ -18,6 +18,11 @@ FROM laradock/php-fpm:2.2-${PHP_VERSION}
 
 LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
 
+# always run apt update when start and after add new source list, then clean up at end.
+RUN apt-get update -yqq && \
+    apt-get install -y apt-utils && \
+    pecl channel-update pecl.php.net
+
 #
 #--------------------------------------------------------------------------
 # Mandatory Software's Installation
@@ -54,6 +59,10 @@ RUN if [ ${INSTALL_XDEBUG} = true ]; then \
 
 # Copy xdebug configuration for remote debugging
 COPY ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
+
+RUN sed -i "s/xdebug.remote_autostart=0/xdebug.remote_autostart=1/" /usr/local/etc/php/conf.d/xdebug.ini && \
+    sed -i "s/xdebug.remote_enable=0/xdebug.remote_enable=1/" /usr/local/etc/php/conf.d/xdebug.ini && \
+    sed -i "s/xdebug.cli_color=0/xdebug.cli_color=1/" /usr/local/etc/php/conf.d/xdebug.ini
 
 ###########################################################################
 # PHP REDIS EXTENSION
@@ -135,32 +144,6 @@ RUN if [ ${INSTALL_INTL} = true ]; then \
     apt-get install -y zlib1g-dev libicu-dev g++ && \
     docker-php-ext-configure intl && \
     docker-php-ext-install intl \
-;fi
-
-###########################################################################
-# Image optimizers:
-###########################################################################
-
-USER root
-
-ARG INSTALL_IMAGE_OPTIMIZERS=false
-
-RUN if [ ${INSTALL_IMAGE_OPTIMIZERS} = true ]; then \
-    apt-get install -y --force-yes jpegoptim optipng pngquant gifsicle \
-;fi
-
-###########################################################################
-# ImageMagick:
-###########################################################################
-
-USER root
-
-ARG INSTALL_IMAGEMAGICK=false
-
-RUN if [ ${INSTALL_IMAGEMAGICK} = true ]; then \
-    apt-get install -y libmagickwand-dev imagemagick && \
-    pecl install imagick && \
-    docker-php-ext-enable imagick \
 ;fi
 
 ###########################################################################

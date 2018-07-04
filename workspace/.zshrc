@@ -101,12 +101,12 @@ alias cdump="composer dump-autoload -o"
 alias composer:dump="composer dump-autoload -o"
 alias db:reset="php artisan migrate:reset && php artisan migrate --seed"
 alias dusk="php artisan dusk"
+alias dusk-serve="php artisan serve --host=127.0.0.2"
 alias fresh="php artisan migrate:fresh"
 alias migrate="php artisan migrate"
 alias refresh="php artisan migrate:refresh"
 alias rollback="php artisan migrate:rollback"
 alias seed="php artisan:seed"
-alias serve="php artisan serve --quiet >> /dev/null 2>&1 &"
 
 # phpunit aliases
 alias phpunit="./vendor/bin/phpunit"
