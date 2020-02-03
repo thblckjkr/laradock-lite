@@ -2,17 +2,37 @@
 ###################### General Setup ######################
 ###########################################################
 
+# Where is your code located?
 APP_CODE_PATH_HOST=../
+
 APP_CODE_PATH_CONTAINER=/var/www:cached
 DATA_PATH_HOST=~/.laradock/data
 VOLUMES_DRIVER=local
 NETWORKS_DRIVER=bridge
 COMPOSE_FILE=docker-compose.yml
+
+# Change the separator from : to ; on Windows
 COMPOSE_PATH_SEPARATOR=:
-PHP_VERSION=7.1
-DOCKER_HOST_IP=10.0.75.1
+
+DOCKER_HOST_IP=10.0.75.1                    # Your host
 PHP_IDE_CONFIG=serverName=laradock
 DOCKER_SYNC_STRATEGY=native_osx
+
+###########################################################
+##################### Version Selection ###################
+###########################################################
+
+# Go to the supported tags on their respective docker-hub
+# to know which versions you can use
+
+# https://hub.docker.com/_/php
+PHP_VERSION=7.2
+
+# https://hub.docker.com/_/mysql
+MYSQL_VERSION=5.7
+
+# https://hub.docker.com/_/mariadb
+MARIADB_VERSION=10.3.22
 
 ###########################################################
 ################ Containers Customization #################
@@ -60,7 +80,6 @@ REDIS_PORT=6379
 
 ### MYSQL #################################################
 
-MYSQL_VERSION=5.7
 MYSQL_DATABASE=default
 MYSQL_USER=default
 MYSQL_PASSWORD=secret
@@ -70,7 +89,6 @@ MYSQL_ENTRYPOINT_INITDB=./mysql/docker-entrypoint-initdb.d
 
 ### MARIADB ###############################################
 
-MARIADB_VERSION=latest
 MARIADB_DATABASE=default
 MARIADB_USER=default
 MARIADB_PASSWORD=secret
