@@ -1,18 +1,68 @@
 # laradock-lite
-Форк: https://github.com/laradock/laradock
+Fork: https://github.com/laradock/laradock
 
-Проект используется для личных целей.
+This proyect is for personal pourposes, but it can be used to easily develop a PHP/Laravel application.
 
-От изначального проекта остались пакеты:
+This project includes the following modules
 
 * NGINX
 * PHP
 * REDIS
 * MySQL
-* WORKERSPACE (добавлен ZSH)
+* WORKSPACE (Added ZSH)
 
-### 1. Устанавливаем Docker
+## Installation
+
+### 1. Install docker
+
+#### MacOs
+
 https://store.docker.com/editions/community/docker-ce-desktop-mac
+
+#### Linux
+
+Arch
+
+```sh
+# Install docker
+pacman -S docker
+
+# Install docker-compose
+pacman -S docker-compose
+```
+
+Ubuntu
+
+```sh
+# Update packages, and install docker
+sudo apt-get update             # Update packages
+sudo apt-get remove docker docker-engine docker.io  # Make sure that there is not installed any previous docker
+sudo apt install docker.io      # Install docker
+
+#Install docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/1.25.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+```
+
+Recommended steps after installing those in Linux
+
+```sh
+# Enable docker as a non-root user
+sudo groupadd docker            # Create group if not exists
+sudo usermod -aG docker $USER   # Add current user to the group
+newgrp docker                   # Reload group to enable changes
+
+# Enable the daemon and add 
+sudo systemctl start docker     # Start docker
+sudo systemctl enable docker    # Enable docker to be run at startup
+```
+
+#### Windows
+
+> No
+
+Just use the [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10) and follow the Ubuntu steps or *Arch, i don't care*.
+
+> It's easier to do it, than try to use all the stack on windows.
 
 ### 2. Устанавливаем Laradock
 ```bash
