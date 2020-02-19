@@ -91,6 +91,13 @@ RUN sed -i 's/\r//' /root/.zshrc
 
 RUN chsh -s /bin/zsh
 
+USER laradock
+COPY ./.zshrc /home/laradock/.zshrc
+RUN sed -i 's/\r//' /home/laradock/.zshrc
+
+RUN chsh -s /bin/zsh
+
+
 ###########################################################################
 # Composer:
 ###########################################################################
